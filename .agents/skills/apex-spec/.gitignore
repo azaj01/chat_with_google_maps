@@ -1,0 +1,42 @@
+# .gitignore
+
+# Spec system (project-specific state)
+.spec_system/
+
+# Project root directories
+/tmp/
+/logs/
+/archive/
+/test_data/
+/EXAMPLE/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environment / secrets
+.env
+
+# Editors
+.cursorignore
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

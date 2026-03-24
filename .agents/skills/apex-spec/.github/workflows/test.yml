@@ -1,0 +1,136 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: Script syntax validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate bash syntax
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' script; do
+            if ! bash -n "$script" 2>&1; then
+              echo "::error file=${script}::Syntax error in ${script}"
+              FAILED=1
+            fi
+          done < <(find scripts/ -name '*.sh' -type f -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::Script syntax validation failed"
+            exit 1
+          fi
+          echo "All scripts pass syntax validation."
+
+  structure:
+    name: Project structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Verify required files exist
+        run: |
+          FAILED=0
+          for f in SKILL.md CLAUDE.md README.md; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Missing required file: $f"
+              FAILED=1
+            fi
+          done
+          for d in scripts references agents; do
+            if [ ! -d "$d" ]; then
+              echo "::error::Missing required directory: $d/"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "All required files and directories present."
+
+      - name: Check reference file coverage
+        run: |
+          TOTAL=0
+          FOUND=0
+          MISSING=""
+          for ref in $(grep -oP 'references/[a-z0-9_-]+\.md' SKILL.md | sort -u); do
+            TOTAL=$((TOTAL + 1))
+            if [ -f "$ref" ]; then
+              FOUND=$((FOUND + 1))
+            else
+              MISSING="${MISSING}  - ${ref}\n"
+            fi
+          done
+          echo "Reference coverage: ${FOUND}/${TOTAL} files present"
+          if [ -n "$MISSING" ]; then
+            printf "Not yet created:\n%b" "$MISSING"
+          fi
+
+  json-validation:
+    name: JSON validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate JSON files
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' jsonfile; do
+            if ! jq empty "$jsonfile" 2>&1; then
+              echo "::error file=${jsonfile}::Invalid JSON: ${jsonfile}"
+              FAILED=1
+            fi
+          done < <(find . -name '*.json' -not -path './.git/*' -type f -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::JSON validation failed"
+            exit 1
+          fi
+          echo "All JSON files are valid."
+
+  script-tests:
+    name: Script functional tests (bats)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install bats and helpers
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats
+
+      - name: Install bats-support and bats-assert
+        run: |
+          sudo mkdir -p /usr/local/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats/bats-assert
+
+      - name: Create minimal spec system for testing
+        run: |
+          mkdir -p .spec_system
+          cat > .spec_system/state.json <<'ENDJSON'
+          {
+            "version": "2.0",
+            "project_name": "ci-test",
+            "current_phase": 0,
+            "current_session": null,
+            "monorepo": false,
+            "phases": {},
+            "completed_sessions": []
+          }
+          ENDJSON
+
+      - name: Run bats test suite
+        run: bats tests/

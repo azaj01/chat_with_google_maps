@@ -1,0 +1,189 @@
+# Apex Infinite CLI
+
+Autonomous OpenAI Codex CLI session manager -- a standalone Python CLI that runs the full Apex Spec System workflow in an infinite loop without human intervention.
+
+Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this CLI replaces all of that with SQLite, subprocess, and terminal output in a single ~1000-line Python file.
+
+## How It Works
+
+```
+             +------------------+
+             |   Manager LLM    |
+             | (decides next    |
+             |  command)        |
+             +--------+---------+
+                      |
+          +-----------v-----------+
+          |                       |
+     +----v----+           +------v------+
+     | Codex   |           |   History   |
+     | CLI     |           |  (SQLite)   |
+     | (Senior |           |  Last 15    |
+     |  Dev)   |           |  records    |
+     +----+----+           +------+------+
+          |                       ^
+          +-----------+-----------+
+                      |
+              (loop until done)
+```
+
+1. **Fetch history** -- Last 15 interactions from SQLite
+2. **Summarize** -- LLM condenses history to <2000 chars
+3. **Decide** -- Manager LLM picks the next command (plansession, implement, validate, etc.)
+4. **Execute** -- Runs `codex exec` with the chosen command in your project directory
+5. **Log** -- Records the interaction
+6. **Repeat** -- Until `alldonebaby` or max iterations reached
+
+The manager LLM can also output `help` to pause for CEO (human) input, or give custom instructions to Codex CLI for edge cases.
+
+## Supported Commands
+
+All Apex Spec commands are recognized and routed through the skill invocation prompt:
+
+| Stage            | Commands                                                                |
+| ---------------- | ----------------------------------------------------------------------- |
+| Initialization   | `initspec`, `createprd`, `createuxprd`                                  |
+| Session workflow | `plansession`, `implement`, `validate`, `updateprd`                     |
+| Phase transition | `audit`, `pipeline`, `infra`, `carryforward`, `documents`, `phasebuild` |
+| Terminal         | `help` (pauses for CEO input), `alldonebaby` (stops loop)               |
+
+Any output not matching a known command is sent as custom instructions directly to Codex CLI, allowing the manager LLM to give ad-hoc instructions (e.g., "Fix the two failing tests then rerun validate").
+
+## Install
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements.txt
+```
+
+## Configuration
+
+Edit `config.yaml` to choose your LLM provider and configure the Codex CLI agent:
+
+```yaml
+provider: grok # ollama | grok | openai
+
+# Codex CLI agent configuration
+codex:
+  binary: 'codex' # Path to codex binary
+  exec_flags: '--dangerously-auto-approve' # Flags passed to codex exec
+  model_reasoning_effort: 'high' # Reasoning effort level
+
+providers:
+  ollama:
+    base_url: 'http://localhost:11434/v1'
+    api_key: 'ollama'
+    model: 'llama3.1:70b'
+
+  grok:
+    base_url: 'https://api.x.ai/v1'
+    api_key: '${XAI_API_KEY}' # Set this env var
+    model: 'grok-4-1-fast-reasoning'
+
+  openai:
+    base_url: 'https://api.openai.com/v1'
+    api_key: '${OPENAI_API_KEY}' # Set this env var
+    model: 'gpt-4o'
+```
+
+API keys use `${ENV_VAR}` syntax, expanded at runtime. The `codex` section controls the agent binary and execution flags -- customize `binary` if codex is not on your PATH, and adjust `exec_flags` or `model_reasoning_effort` as needed.
+
+## Usage
+
+```bash
+# Interactive mode -- prompts for project selection
+python apex_infinite.py
+
+# Direct mode
+python apex_infinite.py --path ~/projects/my-app/ --start plansession
+
+# With CEO instructions
+python apex_infinite.py --path ~/projects/my-app/ --start plansession --ceo "focus on auth first"
+
+# Dry run -- see LLM decisions without executing codex
+python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
+
+# View history
+python apex_infinite.py --history
+python apex_infinite.py --history --path ~/projects/my-app/
+
+# Override provider/model
+python apex_infinite.py --path ~/projects/my-app/ --provider ollama --model "qwen2.5:72b"
+
+# Limit iterations
+python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iterations 5
+```
+
+## Options
+
+```
+--path TEXT               Project path (prompted if not given)
+--start TEXT              Starting command (e.g. "plansession")
+--ceo TEXT                Initial CEO instructions
+--provider TEXT           LLM provider override: ollama|grok|openai
+--model TEXT              Model override
+--config TEXT             Config file path (default: ./config.yaml)
+--history                 Show interaction history
+--max-iterations INTEGER  Safety limit (default: 50)
+--dry-run                 Show what would execute without running codex
+--verbose                 Show full agent output
+--version                 Show version
+```
+
+## CEO Intervention
+
+Two ways to inject human guidance:
+
+- **`help` pause** -- When the manager LLM outputs `help`, the CLI pauses and prompts for input
+- **Ctrl+C interrupt** -- Press once to pause after the current step for CEO input. Press twice to force quit.
+
+## Safety Features
+
+- **Max iterations** -- Default 50, prevents runaway loops
+- **30-min timeout** -- Per codex execution
+- **Dry run mode** -- See decisions without executing
+- **Error feedback** -- Failed commands feed error text back to the manager LLM
+- **Graceful interrupt** -- Single Ctrl+C pauses, double exits
+
+## Data
+
+Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL mode).
+
+## Testing
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements.txt -r requirements-dev.txt
+pytest tests/ -v
+```
+
+The test suite has 54 tests across 5 classes:
+
+| Class                      | Tests | Coverage                                               |
+| -------------------------- | ----- | ------------------------------------------------------ |
+| TestManagerSystemPrompt    | 12    | Content validation, forbidden strings, structure       |
+| TestSummarizerSystemPrompt | 5     | Prompt content and formatting                          |
+| TestUserMessageTemplate    | 4     | Mock LLM integration, message assembly                 |
+| TestBuildCodexPrompt       | 18    | Parametrized across all 13 known commands + edge cases |
+| TestJsonParsing            | 2     | json_mode parsing and regex fallback                   |
+
+## Deep-Dive Docs
+
+- [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md)
+- [History DB reference](../docs/apex-infinite-cli/history-db.md)
+- [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
+- [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
+
+## Notes
+
+- **Nesting**: The CLI launches `codex exec` subprocesses. Codex CLI does not require special environment variable handling for nested invocations.
+- **Slash tolerance**: The manager LLM sometimes outputs `/plansession` instead of `plansession`. The CLI strips leading slashes before routing.
+- **LLM retries**: Both LLM calls (summarizer and manager) retry 3 times with a 5-second wait between attempts, matching the original n8n workflow's `retryOnFail` + `waitBetweenTries: 5000`.
+- **Reference workflow**: The original n8n workflow JSON is preserved in `n8n-workflow/` for reference.
+- **DB column naming**: The SQLite `cc_response` column name is preserved for backward compatibility with existing databases. Python variable names use `agent_response` but the DB schema was not migrated to avoid breaking existing history.
+
+## Requirements
+
+- Python 3.10+
+- Codex CLI (`codex`) installed and accessible
+- An LLM provider API key (Grok, OpenAI) or local Ollama instance
