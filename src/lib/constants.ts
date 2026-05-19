@@ -21,7 +21,7 @@
 /**
  * Default Live API model to use
  */
-export const DEFAULT_LIVE_API_MODEL = 'gemini-2.5-flash-native-audio-preview-12-2025';
+export const DEFAULT_LIVE_API_MODEL = 'gemini-3.1-flash-live-preview';
 
 /**
  * Available models for Gemini Live API
@@ -35,9 +35,14 @@ export interface ModelOption {
 
 export const AVAILABLE_LIVE_MODELS: ModelOption[] = [
   {
+    id: 'gemini-3.1-flash-live-preview',
+    name: 'Gemini 3.1 Flash Live Preview (May 2026)',
+    description: 'Latest frontier audio model with reasoning capabilities',
+  },
+  {
     id: 'gemini-2.5-flash-native-audio-preview-12-2025',
     name: 'Gemini 2.5 Flash Native Audio (Dec 2025)',
-    description: 'Latest native audio model with best quality',
+    description: 'Stable native audio version',
   },
   {
     id: 'gemini-2.5-flash-native-audio-preview-09-2025',
