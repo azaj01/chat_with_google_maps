@@ -19,7 +19,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import React, { memo, useEffect, useRef, useState, type FormEvent, type Ref } from 'react';
+import React, { memo, useEffect, useRef, useState, type SyntheticEvent, type Ref } from 'react';
 import { motion } from 'framer-motion';
 import {
   Play,
@@ -124,7 +124,7 @@ function ControlTray({ trayRef }: ControlTrayProps) {
     setMuted(!muted);
   };
 
-  const handleTextSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleTextSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!textPrompt.trim()) return;
 

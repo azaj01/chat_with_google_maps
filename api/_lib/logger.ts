@@ -80,7 +80,7 @@ function createFileStream(config: LogConfig) {
   };
 
   const rfsOptions: RfsOptions = {
-    size: config.maxSize as `${number}M` | `${number}K` | `${number}G` | `${number}B`,
+    size: config.maxSize,
     path: logDir,
     compress: 'gzip',
     maxFiles: config.maxFiles,
@@ -88,7 +88,7 @@ function createFileStream(config: LogConfig) {
 
   const interval = intervalMap[config.rotationInterval];
   if (interval) {
-    rfsOptions.interval = interval as `${number}d` | `${number}h` | `${number}m` | `${number}s`;
+    rfsOptions.interval = interval;
   }
 
   return createStream(generator, rfsOptions);

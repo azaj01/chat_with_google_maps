@@ -176,7 +176,7 @@ function extractResultCount(response: unknown): number {
  */
 function extractUsageMetadata(response: unknown): GeminiUsageMetadata {
   if (typeof response === 'object' && response !== null && 'usageMetadata' in response) {
-    const usage = (response as { usageMetadata: unknown }).usageMetadata;
+    const usage = response.usageMetadata;
     if (typeof usage === 'object' && usage !== null) {
       const meta = usage as Record<string, unknown>;
       return {

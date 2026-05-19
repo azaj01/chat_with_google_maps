@@ -121,7 +121,7 @@ function validateGeminiRequest(
       lat: b.lat,
       lng: b.lng,
       systemInstruction: b.systemInstruction,
-    } as GeminiRequest,
+    },
   };
 }
 

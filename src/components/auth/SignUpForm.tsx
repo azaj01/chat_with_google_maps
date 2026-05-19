@@ -7,7 +7,7 @@
  * @module src/components/auth/SignUpForm
  */
 
-import React, { useState, useCallback, type FormEvent, type ChangeEvent } from 'react';
+import React, { useState, useCallback, type SyntheticEvent, type ChangeEvent } from 'react';
 import { signUp } from '@/lib/auth-client';
 import {
   validateSignUpForm,
@@ -109,7 +109,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
 
   // Handle form submission
   const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: SyntheticEvent<HTMLFormElement>) => {
       e.preventDefault();
       setServerError(null);
 

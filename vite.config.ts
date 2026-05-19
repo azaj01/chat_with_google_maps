@@ -41,13 +41,27 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            // React core libraries
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            // Google/Maps related libraries
-            'vendor-google': ['@google/genai', '@vis.gl/react-google-maps'],
-            // UI and utility libraries
-            'vendor-ui': ['react-markdown', 'remark-gfm', 'lodash', 'zustand'],
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (
+                id.includes('react') ||
+                id.includes('react-dom') ||
+                id.includes('react-router-dom')
+              ) {
+                return 'vendor-react';
+              }
+              if (id.includes('@google/genai') || id.includes('@vis.gl/react-google-maps')) {
+                return 'vendor-google';
+              }
+              if (
+                id.includes('react-markdown') ||
+                id.includes('remark-gfm') ||
+                id.includes('lodash') ||
+                id.includes('zustand')
+              ) {
+                return 'vendor-ui';
+              }
+            }
           },
         },
       },

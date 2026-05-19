@@ -6,13 +6,13 @@ repos:
     rev: v3.8.0-1
     hooks:
       - id: shfmt
-        args: ["-ci", "-bn", "-i", "4"]
+        args: ['-ci', '-bn', '-i', '4']
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
-        args: ["--source-path=scripts"]
+        args: ['--source-path=scripts']
         exclude: '\.bats$'
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -21,9 +21,9 @@ repos:
       - id: check-executables-have-shebangs
       - id: end-of-file-fixer
       - id: trailing-whitespace
-        args: ["--markdown-linebreak-ext=md"]
+        args: ['--markdown-linebreak-ext=md']
       - id: mixed-line-ending
-        args: ["--fix=lf"]
+        args: ['--fix=lf']
 
   - repo: local
     hooks:

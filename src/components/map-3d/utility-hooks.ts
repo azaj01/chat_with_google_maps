@@ -46,13 +46,17 @@ export function useCallbackRef<T>() {
 
 export function useDeepCompareEffect(effect: EffectCallback, deps: DependencyList) {
   const ref = useRef<DependencyList | undefined>(undefined);
+  const [signal, setSignal] = useState(0);
 
-  if (!ref.current || !isDeepEqual(deps, ref.current)) {
-    ref.current = deps;
-  }
+  useEffect(() => {
+    if (!isDeepEqual(deps, ref.current)) {
+      ref.current = deps;
+      setSignal(s => s + 1);
+    }
+  }, [deps]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(effect, ref.current);
+  useEffect(() => effect(), [signal]);
 }
 
 export function useDebouncedEffect(effect: EffectCallback, timeout: number, deps: DependencyList) {

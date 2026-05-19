@@ -114,8 +114,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const session = sessionData?.session ?? null;
 
     return {
-      user: user as User | null,
-      session: session as Session | null,
+      user: user,
+      session: session,
       isLoading: isPending,
       isAuthenticated: !!user,
       error: error ?? null,

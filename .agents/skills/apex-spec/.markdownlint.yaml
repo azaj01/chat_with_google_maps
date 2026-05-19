@@ -3,7 +3,7 @@
 
 # MD003: Heading style - ATX only (# style)
 MD003:
-  style: "atx"
+  style: 'atx'
 
 # MD013: Line length - disabled (prose uses one-sentence-per-line)
 MD013: false
@@ -29,8 +29,8 @@ MD060: false
 
 # MD046: Code block style - fenced only
 MD046:
-  style: "fenced"
+  style: 'fenced'
 
 # MD048: Code fence style - backtick
 MD048:
-  style: "backtick"
+  style: 'backtick'

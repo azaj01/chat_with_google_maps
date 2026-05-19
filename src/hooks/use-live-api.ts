@@ -78,6 +78,7 @@ export function useLiveApi({
   const { model } = useSettings();
   // Client is created on-demand when connecting with a fresh ephemeral token
   const clientRef = useRef<GenAILiveClient | null>(null);
+  const [client, setClient] = useState<GenAILiveClient | null>(null);
 
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
@@ -251,11 +252,7 @@ export function useLiveApi({
 
             // Record tool call for tracing
             const toolStartTime = Date.now();
-            recordToolCall(
-              turnNumberRef.current,
-              fcName,
-              (fc.args ?? {}) as unknown as Record<string, unknown>
-            );
+            recordToolCall(turnNumberRef.current, fcName, fc.args ?? {});
 
             let toolResponse: GenerateContentResponse | string = 'ok';
             try {
@@ -390,6 +387,8 @@ export function useLiveApi({
     }
     if (clientRef.current) {
       clientRef.current.disconnect();
+      clientRef.current = null;
+      setClient(null);
     }
 
     try {
@@ -402,6 +401,7 @@ export function useLiveApi({
       // Create a new client with the ephemeral token
       const newClient = new GenAILiveClient(token, model);
       clientRef.current = newClient;
+      setClient(newClient);
 
       // Set up event listeners and store cleanup function
       cleanupListenersRef.current = setupClientListeners(newClient);
@@ -432,12 +432,14 @@ export function useLiveApi({
     }
     if (clientRef.current) {
       clientRef.current.disconnect();
+      clientRef.current = null;
+      setClient(null);
     }
     setConnected(false);
   }, []);
 
   return {
-    client: clientRef.current,
+    client,
     config,
     setConfig,
     connect,

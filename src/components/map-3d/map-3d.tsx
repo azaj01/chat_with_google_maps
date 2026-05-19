@@ -84,7 +84,13 @@ export const Map3D = forwardRef(
     return (
       <gmp-map-3d
         ref={map3dRef}
-        center={center}
+        center={
+          center as
+            | google.maps.LatLngAltitudeLiteral
+            | google.maps.LatLngAltitude
+            | null
+            | undefined
+        }
         range={range}
         heading={heading}
         tilt={tilt}

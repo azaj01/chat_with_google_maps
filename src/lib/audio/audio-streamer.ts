@@ -193,7 +193,7 @@ export class AudioStreamer {
           if (this.audioQueue.length > 0) {
             this.scheduleNextBuffer();
           }
-        }, 100) as unknown as number;
+        }, 100);
       }
     } else {
       const nextCheckTime = (this.scheduledTime - this.context.currentTime) * 1000;
