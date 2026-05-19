@@ -188,7 +188,7 @@ export function getTrustedOrigins(): string[] {
   // when Vite dev server starts on an alternate port
   const isDev = process.env.NODE_ENV !== 'production';
   if (isDev) {
-    const devPorts = [3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010];
+    const devPorts = [3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3020];
     for (const port of devPorts) {
       origins.add(`http://localhost:${String(port)}`);
     }

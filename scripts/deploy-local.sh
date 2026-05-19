@@ -46,7 +46,7 @@ PROD_MODE=false
 # Service ports
 POSTGRES_PORT=${POSTGRES_PORT:-5438}
 API_PORT=${API_PORT:-3011}
-VITE_PORT=3003
+VITE_PORT=3020
 
 # ============================================================================
 # Helper Functions

@@ -138,8 +138,13 @@ export class GenAILiveClient {
       this.emitter.emit('error', new ErrorEvent('Client is not connected'));
       return;
     }
-    this.session.sendClientContent({ turns: parts, turnComplete });
-    this.log(`client.send`, parts);
+    try {
+      this.session.sendClientContent({ turns: parts, turnComplete });
+      this.log(`client.send`, parts);
+    } catch (e: unknown) {
+      console.warn('Failed to send client content (WebSocket may be closing/closed):', e);
+      this._status = 'disconnected';
+    }
   }
 
   public sendRealtimeText(text: string) {
@@ -148,8 +153,13 @@ export class GenAILiveClient {
       console.error(`sendRealtimeText: Client is not connected, for message: ${text}`);
       return;
     }
-    this.session.sendRealtimeInput({ text });
-    this.log(`client.send`, text);
+    try {
+      this.session.sendRealtimeInput({ text });
+      this.log(`client.send`, text);
+    } catch (e: unknown) {
+      console.warn('Failed to send realtime text (WebSocket may be closing/closed):', e);
+      this._status = 'disconnected';
+    }
   }
 
   public sendRealtimeInput(chunks: Blob[]) {
@@ -159,9 +169,19 @@ export class GenAILiveClient {
     }
 
     const session = this.session;
-    chunks.forEach(chunk => {
-      session.sendRealtimeInput({ media: chunk });
-    });
+    try {
+      chunks.forEach(chunk => {
+        if (chunk.mimeType?.startsWith('audio/')) {
+          session.sendRealtimeInput({ audio: chunk });
+        } else {
+          session.sendRealtimeInput({ media: chunk });
+        }
+      });
+    } catch (e: unknown) {
+      console.warn('Failed to send realtime input (WebSocket may be closing/closed):', e);
+      this._status = 'disconnected';
+      return;
+    }
 
     let hasAudio = false;
     let hasVideo = false;
@@ -182,13 +202,17 @@ export class GenAILiveClient {
       this.emitter.emit('error', new ErrorEvent('Client is not connected'));
       return;
     }
-    if (toolResponse.functionResponses?.length) {
-      this.session.sendToolResponse({
-        functionResponses: toolResponse.functionResponses,
-      });
+    try {
+      if (toolResponse.functionResponses?.length) {
+        this.session.sendToolResponse({
+          functionResponses: toolResponse.functionResponses,
+        });
+      }
+      this.log(`client.toolResponse`, { toolResponse });
+    } catch (e: unknown) {
+      console.warn('Failed to send tool response (WebSocket may be closing/closed):', e);
+      this._status = 'disconnected';
     }
-
-    this.log(`client.toolResponse`, { toolResponse });
   }
 
   protected onMessage(message: LiveServerMessage) {

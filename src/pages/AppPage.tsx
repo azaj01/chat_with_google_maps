@@ -233,14 +233,7 @@ function AppContent() {
       padding={padding}
     >
       {/* User menu with avatar and dropdown */}
-      <div
-        style={{
-          position: 'fixed',
-          top: '10px',
-          right: '10px',
-          zIndex: 9999,
-        }}
-      >
+      <div className="floating-user-pill-container">
         <UserMenu />
       </div>
       <ErrorScreen />

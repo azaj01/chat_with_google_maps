@@ -70,12 +70,15 @@ export function UserMenu({ className = '' }: UserMenuProps) {
         <button
           type="button"
           className={cn(
-            'rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 focus:ring-offset-[var(--background)]',
+            'floating-user-pill focus:outline-none focus:ring-2 focus:ring-[var(--ring)]',
             className
           )}
           aria-label="User menu"
         >
           <Avatar user={user} size="md" />
+          <span className="hidden md:inline text-sm font-semibold pr-1 text-[var(--text)]">
+            {user.name ?? user.email.split('@')[0]}
+          </span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

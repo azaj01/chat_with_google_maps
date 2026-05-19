@@ -47,16 +47,16 @@ const PopUp: React.FC<PopUpProps> = ({ open, onClose }) => {
         >
           <DialogHeader className="mb-5">
             <DialogTitle className="text-2xl text-[var(--accent-blue-headers)] font-normal">
-              Welcome to the Interactive Day Planner
+              Welcome to Chat with Google Maps
             </DialogTitle>
           </DialogHeader>
           <DialogDescription asChild>
             <div className="popup-scrollable-content max-h-[60vh] overflow-y-auto md:max-h-none">
               <p className="mb-5 leading-relaxed text-[var(--text)]">
-                This interactive demo highlights Gemini and Grounding with Google Maps&apos; ability
-                to engage in real-time, voice-driven conversations. Plan a day trip using natural
-                language and experience how Gemini leverages Google Maps to deliver accurate,
-                up-to-the-minute information.
+                This interactive application highlights Gemini and Grounding with Google Maps&apos;
+                ability to engage in real-time, voice-driven conversations. Explore any place on
+                Earth using natural language and experience how Gemini leverages Google Maps data to
+                deliver accurate, up-to-the-minute information on stunning 3D photorealistic maps.
               </p>
               <p className="mb-5 text-[var(--text)]">To get started:</p>
               <ol className="pl-5 mb-8 space-y-4">

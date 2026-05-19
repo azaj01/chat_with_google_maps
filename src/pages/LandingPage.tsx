@@ -85,6 +85,34 @@ export function LandingPage() {
           </button>
         </section>
 
+        {/* Preview Section */}
+        <section className="landing-preview">
+          <div className="landing-preview-container">
+            <img
+              src="/images/map_preview.png"
+              alt="Chat with Google Maps Preview"
+              className="landing-preview-image w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+              onError={e => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            {/* Visual Glassmorphic Accent Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--Neutral-00)]/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-between text-left">
+              <div>
+                <h4 className="text-sm font-semibold text-white">Live AI Grounding Session</h4>
+                <p className="text-xs text-gray-300">San Francisco Bay Area Exploration</p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--Green-400)] animate-pulse" />
+                <span className="text-xs font-mono text-[var(--Green-400)] uppercase tracking-wider">
+                  Connected
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
         <section className="landing-features">
           <div className="landing-features-grid">
